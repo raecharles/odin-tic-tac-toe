@@ -16,7 +16,9 @@
     flex-wrap:wrap;
     font-size:3em;
 }
-
+.gameOver {
+    pointer-events: none;
+}
 .box {
     flex:0 0 32%;
     height:calc(90vw / 3);
@@ -37,7 +39,14 @@
     border-top: var(--border-style);
     border-bottom: var(--border-style);
 }
-
+.highlight {
+    animation: win 2s ease-out forwards;
+}
+@keyframes win {
+    0% {background:gold;}
+    5% {background: white;}
+    100% {background: gold;}
+}
 @media (min-width: 768px) {
     #app {
         width:500px;
