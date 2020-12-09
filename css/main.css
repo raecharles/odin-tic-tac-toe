@@ -4,9 +4,32 @@
 #app {
     width:100%;
     margin:auto;
+    min-width:300px;
+}
+div#display {
+    border: 5px dotted green;
+    padding: 10px;
+}
+#players {
+    margin:20px 0;
+}
+#players label {
+    display:flex;
+    margin-right:10px;
+}
+#players input {
+    flex:1;
+    margin-left:5px;
 }
 #start {
-    display:block;
+    width: 100%;
+    background: #333;
+    color: white;
+    text-transform: uppercase;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom:20px;
 }
 #gameboard {
     margin-top:20px;
@@ -47,9 +70,20 @@
     5% {background: white;}
     100% {background: gold;}
 }
+@media (min-width: 550px) {
+    #players {
+        display: flex;
+    }
+    #players label {
+        flex: 0 0 49%;
+    }
+}
 @media (min-width: 768px) {
     #app {
-        width:500px;
+        width:700px;
+    }
+    #start {
+        margin-bottom:40px;
     }
     .box {
         height:calc(500px / 3);

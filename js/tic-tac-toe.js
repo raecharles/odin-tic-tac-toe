@@ -2,23 +2,16 @@
 const APP = document.querySelector('#app');
 
 const Gameboard = (() => {
-    let _gameboard = 
-        {
-            X:
-            {rowA: [],
-            rowB: [],
-            rowC: [],
-            col0: [],
-            col1: [],
-            col2: []}
-        ,
-            O: {rowA: [],
-            rowB: [],
-            rowC: [],
-            col0: [],
-            col1: [],
-            col2: []}
-        };
+    
+    //why the extra parenthesis w/ arrow function?
+    //The issue with the arrow function is that the parser doesn't interpret the two braces as an object literal, but as a block statement.
+    //The magic parentheses force the parser to treat the object literal as an expression instead of a block statement.
+    const defaultBoard = () => ({
+            X: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [] },
+            O: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [] }
+        });
+
+    let _gameboard = defaultBoard();
 
     const updateBoard = (sqId,type) => {
         let row = 'row' + sqId.substring(0,1).toUpperCase();
@@ -33,25 +26,9 @@ const Gameboard = (() => {
         return false;
     }
     const resetBoard = () => {
-        _gameboard = {
-            X: {rowA: [],
-            rowB: [],
-            rowC: [],
-            col0: [],
-            col1: [],
-            col2: []}
-        ,
-        
-            O: {rowA: [],
-            rowB: [],
-            rowC: [],
-            col0: [],
-            col1: [],
-            col2: []}
-        };
+        _gameboard = defaultBoard();
         console.log(_gameboard);
         drawBoard();
-        document.querySelector('#display').innerHTML = 'Enter Names.';
     }
     const getGameboard = () => {
         return _gameboard;
@@ -64,8 +41,6 @@ const Gameboard = (() => {
             let id = (x < 3) ? 'a' + x : (x < 6) ? 'b' + (x - 3) : 'c' + (x - 6);
             let box = createElemWithAttributes('div',{'id': id, 'class': 'box'});
             box.addEventListener('mouseup',(e) => {
-                /*let player = Game.getCurrentPlayer();
-                updateBoard(e.target.id,player.type);          */
                 Game.play(e.target.id);
             });
             document.querySelector('#gameboard').append(box);
@@ -96,29 +71,65 @@ const Display = ((selector) => {
     // MESSAGE DISPLAY
     ///////////////////*/
     const MessageDisplay = (() => {
+        const startMsg = 'Enter name(s) and press start to play.';
         const disp = createElemWithAttributes('div', {'id': 'display'});
-        disp.innerHTML = 'Enter Player 1\'s Name';
+        const updateMsg = (msg = startMsg) => {
+            document.querySelector('#display').innerHTML = msg;
+        }
         const render = () => {
             console.log('building message display...');
             APP.append(disp);
+            updateMsg();
         }
         return {
-            render
+            render, updateMsg
         }
     })();
 
     /*///////////////////
     // PLAYER INPUTS
     ///////////////////*/
-    const PlayerInput = (label) => {
-        console.log('building label: ' + label + '...');
-        let id = label.replace(' ','').toLowerCase();
-        let lbl = createElemWithAttributes('label', {'for': id});
-        lbl.innerHTML = label;
-        let input = createElemWithAttributes('input', {'id': id, 'required': 'required'});
-        //`<label for="${id}">${label}</label>: <input id="${id}" required />`;        
-        APP.append(lbl,input);        
-    };
+    const PlayerInput = (() => {
+        const validatePlayers = () => {
+            let players = ['CPU', 'CPU'];
+            
+            for (let i = 0; i < 2; i++)
+            {
+                let id = '#player' + (i+1);
+                let el = document.querySelector(id);
+                if (el.value.trim() != '') 
+                {
+                    players[i] = document.querySelector(id).value.trim();                    
+                }
+                else
+                {
+                    el.value = 'CPU';
+                }
+            }
+            return players; 
+        };
+ 
+        const render = (players) => {
+            console.log('building players inputs...');
+            let div = createElemWithAttributes('div', {'id': 'players'});
+            APP.append(div);
+
+            for (let i = 0; i < players.length; i++)
+            {
+                let id = players[i].replace(' ','').toLowerCase();
+                let lbl = createElemWithAttributes('label', {'for': id, 'id': 'label-' + id});
+                lbl.innerHTML = players[i] + ': ';
+                document.querySelector('#players').append(lbl);
+                let input = createElemWithAttributes('input', {'id': id});
+                input.value = 'CPU';       
+                document.querySelector('#label-' + id).append(input);
+            }   
+
+        }
+        return {
+            render, validatePlayers
+        }  
+    })();
     
     /*///////////////////
     // START / STOP BUTTON
@@ -132,16 +143,13 @@ const Display = ((selector) => {
         btn.addEventListener('click', (e) => {
             let name = e.target.innerHTML.toLowerCase();
             if (name == 'start')
-            {
+            {   
                 Game.startGame();                
             }
             else
             {
-                /*Gameboard.resetBoard();
-                Game.setCurrentPlayer();*/
                 Game.resetGame();
             }
-            //document.querySelector('#gameboard').classList = '';
             e.target.innerHTML = (name == 'start') ? 'Restart' : 'Start';
         });
         
@@ -156,14 +164,14 @@ const Display = ((selector) => {
 
     const render = () => {
         MessageDisplay.render();
-        PlayerInput('Player 1');
-        PlayerInput('Player 2');
+        PlayerInput.render(['Player 1','Player 2']);
+        //PlayerInput.render('Player 2');
         Button.render();
         Gameboard.render();
     }
 
     return {
-        render
+        render, MessageDisplay, PlayerInput
     }
     
 })('#app');
@@ -173,23 +181,17 @@ const Game = (() => {
     let _GameOver = false;
     const setCurrentPlayer = () => {
         _Players.currentPlayer = (_Players.currentPlayer == _Players.p1) ? _Players.p2 : _Players.p1;
-        document.querySelector('#display').innerHTML = _Players.currentPlayer.name + "'s move."; 
+        Display.MessageDisplay.updateMsg(_Players.currentPlayer.name + "'s move."); 
     }
     const getCurrentPlayer = () => {
         return _Players.currentPlayer;
     }
-    const setMarker = (id,marker) => {
-        document.getElementById(id).innerHTML = marker;
-        Game.checkWinner();
-        Game.setPlayers(); 
-    }
     const startGame = () => {
-        let p1Name = document.querySelector('#player1').value;
-        let p2Name = document.querySelector('#player2').value;
-        _Players.p1 = Player(p1Name,'X');
-        _Players.p2 = Player(p2Name,'O');
+        let names = Display.PlayerInput.validatePlayers();
+        _Players.p1 = Player(names[0],'X');
+        _Players.p2 = Player(names[1],'O');
         _Players.currentPlayer = _Players.p1;
-        document.querySelector('#display').innerHTML = p1Name + "'s move."; 
+        Display.MessageDisplay.updateMsg(names[0] + "'s move.");
         document.querySelector('#gameboard').classList = '';
         _GameOver = false;
     }
@@ -240,12 +242,12 @@ const Game = (() => {
         
         if (win) 
         {
-            document.querySelector('#display').innerHTML = player.name + ' wins!';
+            Display.MessageDisplay.updateMsg(player.name + ' wins!');
             _GameOver = true;
         }
         else if (moves > 9)
         {
-            document.querySelector('#display').innerHTML = 'Tie game!';
+            Display.MessageDisplay.updateMsg('Tie game!');
             _GameOver = true;
         }
         if (_GameOver)
@@ -264,7 +266,7 @@ const Game = (() => {
     }
     const resetGame = () => {
         Gameboard.resetBoard();
-        setCurrentPlayer();
+        Display.MessageDisplay.updateMsg();
     }
     Display.render();
     return {
@@ -280,5 +282,5 @@ function createElemWithAttributes(el, attrs) {
     }
     return elem;
   }
-//document.querySelector('#app').
+ 
 
