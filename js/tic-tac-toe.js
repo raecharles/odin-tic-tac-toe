@@ -7,8 +7,8 @@ const Gameboard = (() => {
     //The issue with the arrow function is that the parser doesn't interpret the two braces as an object literal, but as a block statement.
     //The magic parentheses force the parser to treat the object literal as an expression instead of a block statement.
     const defaultBoard = () => ({
-            X: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [] },
-            O: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [] }
+            X: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [], diagUp: [], diagDn: [] },
+            O: { rowA: [], rowB: [], rowC: [], col0: [], col1: [], col2: [], diagUp: [], diagDn: []  }
         });
 
     let _gameboard = defaultBoard();
@@ -20,7 +20,21 @@ const Gameboard = (() => {
         if (_gameboard.X[row].indexOf(sqId) == -1 && _gameboard.O[row].indexOf(sqId) == -1)
         {
             _gameboard[type][row].push(sqId);
-            _gameboard[type][col].push(sqId);        
+            _gameboard[type][col].push(sqId);
+            if (sqId == 'b1')
+            {
+                _gameboard[type]['diagUp'].push(sqId);
+                _gameboard[type]['diagDn'].push(sqId);
+            }
+            else if (sqId == 'a0' || sqId == 'c2')
+            {
+                _gameboard[type]['diagDn'].push(sqId);
+            } 
+            else if (sqId == 'c0' || sqId == 'a2')
+            {
+                _gameboard[type]['diagUp'].push(sqId);
+            }
+            console.log(_gameboard); 
             return true;
         }
         return false;
@@ -161,6 +175,46 @@ const Display = ((selector) => {
             render
         }
     })();
+    const Fatality = (type,marker) => {
+        let boxAnim = createElemWithAttributes('div', {'class': 'finisher'});
+        switch (type)
+        {
+            case 1:
+                /*boxAnim.innerHTML = `<svg width="100%" height="10">
+                <defs>
+                    <pattern id="spikes" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <polygon points="0,0 10,0 5,10" style="fill:black;"></polygon>
+                    </pattern>
+                </defs>
+                <rect x="0" y="0" width="100%" height="10" fill="url(#spikes)"></rect>
+            </svg>`;*/
+            console.log(marker);
+            boxAnim.innerHTML = `<div class="squasher">
+            <div class="markType col">${marker.repeat(50)};</div>    
+            <div class="markType">${marker.repeat(20)};</div>
+                <div class="markType">${marker.repeat(20)};</div>
+                <span class="bloodLt">blood</span>
+                <span class="bloodRt">blood</span>
+            </div>
+            `;
+                break;
+            default:
+        }
+        return boxAnim;
+    };
+
+    const Lights = (() => {
+        let lights = document.querySelector('#lights');
+        const on = () => {
+            lights.classList.remove('off');
+        }
+        const off = () => {
+            lights.classList.add('off');
+        }
+        return {
+            on, off
+        }
+    })();
 
     const render = () => {
         MessageDisplay.render();
@@ -171,14 +225,118 @@ const Display = ((selector) => {
     }
 
     return {
-        render, MessageDisplay, PlayerInput
+        render, MessageDisplay, PlayerInput, Fatality, Lights
     }
     
 })('#app');
 
+/*////////////
+// PLAY SOUNDS
+////////////*/
+const Soundeffect = (() => {
+    let moves = ['se1','se2','se3','toasty','getOver'];
+    const playSound = (type, delay = 0) => {
+        setTimeout(function(){
+            switch (type)
+            {
+                case 'move':
+                    let idx = Math.floor(Math.random()*moves.length);
+                    console.log(idx);
+                    document.getElementById(moves[idx]).play();
+                    break;
+                case 'round1':
+                    /*document.getElementById('rd1').addEventListener('ended', () => {
+                        document.getElementById('mktheme').play();
+                        document.getElementById('mktheme').setAttribute('loop','loop');
+                    });*/
+                    document.getElementById('rd1').play(); //callback - wait for audio to finish
+                    break;
+                case 'finish':
+                    /*document.getElementById('finish').addEventListener('ended', () => {
+                        Game.isFinishingMove();
+                    });*/
+                    document.getElementById('finish').play();
+                    break;
+                case 'theme':
+                    document.getElementById('mktheme').play();
+                    break;
+                case 'fatality':
+                    resetSound('mktheme');
+                    document.getElementById('fatality').play(); 
+                    break;
+                    default:
+            }
+        }, delay);
+    }
+    const resetSound = (id) => {
+        let audio = document.getElementById(id);
+        audio.pause();
+        audio.currentTime = 0;
+    }
+
+    return {
+        playSound
+    }
+})();
+
+const FinishingMoves = (() => {
+          
+    const Fatality1 = function(oppType) {            
+        let gb = Gameboard.getGameboard();
+        let ids = [].concat(gb[oppType].col0,gb[oppType].col1,gb[oppType].col2);
+        console.log(ids);
+            ids.filter(id => {
+                let ft = Display.Fatality(1,Game.getCurrentPlayer().type);
+                document.getElementById(id).prepend(ft);
+                let anim = document.querySelectorAll('.finisher');
+                let markers = document.querySelectorAll('#' + id + ' .marker span');
+                let bloods = document.querySelectorAll('#' + id + ' .squasher span');
+                //let bloodRt = document.querySelectorAll('#' + id + ' .bloodRt');
+                for (const finish of anim)
+                {
+                    finish.addEventListener('transitionend', () => {
+                        finish.classList.add('stage2');
+                        for (const marker of markers)
+                        {
+                            marker.classList.add('fatal');
+                        }
+                        for (const blood of bloods)
+                        {
+                            blood.classList.add('bleed');
+                        }            
+                    });
+                    setTimeout(function(){
+                        finish.classList.add('fatal');                                
+                    },100);
+                }
+                
+            }); 
+            Soundeffect.playSound('fatality',1500);
+                
+    }
+        /*let keys = _FinishKeys.join();
+        console.log(keys);
+        switch (keys)
+        {
+            case 'f': 
+                                                                                 
+                break;
+            default:
+        }*/
+    return {
+        Fatality1
+    }
+})();
+
+/*/////////////
+// MAIN GAME
+/////////////*/
 const Game = (() => {
     let _Players = {};
     let _GameOver = false;
+    //let _Finish = false;  
+    var _FinishKeys = [];
+
     const setCurrentPlayer = () => {
         _Players.currentPlayer = (_Players.currentPlayer == _Players.p1) ? _Players.p2 : _Players.p1;
         Display.MessageDisplay.updateMsg(_Players.currentPlayer.name + "'s move."); 
@@ -187,62 +345,101 @@ const Game = (() => {
         return _Players.currentPlayer;
     }
     const startGame = () => {
+        _FinishKeys = [];
         let names = Display.PlayerInput.validatePlayers();
         _Players.p1 = Player(names[0],'X');
         _Players.p2 = Player(names[1],'O');
         _Players.currentPlayer = _Players.p1;
         Display.MessageDisplay.updateMsg(names[0] + "'s move.");
-        document.querySelector('#gameboard').classList = '';
+        document.querySelector('#rd1').addEventListener('ended', () => {
+            document.querySelector('#gameboard').classList = '';
+            document.getElementById('mktheme').play();
+            document.getElementById('mktheme').setAttribute('loop','loop');
+        })        
+        Soundeffect.playSound('round1');
         _GameOver = false;
     }
     const play = (id) => {
         let type = _Players.currentPlayer.type;
         if(Gameboard.updateBoard(id,type))
         {
-            document.getElementById(id).innerHTML = type;
+            document.getElementById(id).innerHTML = `<div class="marker"><span>${type}</span></div>`;
+            Soundeffect.playSound('move');
             checkWinner();
-            if (!_GameOver) setCurrentPlayer(); 
+            if (!_GameOver) setCurrentPlayer();
+            /*if (_Finish) {
+                setTimeout(function() {
+                    Soundeffect.playSound('finish')
+                },1000);                
+                _Finish = false;
+            }*/
         }
     }
+
+    const isFinishingMove = () => {
+        let gb = Gameboard.getGameboard();
+        //move to top
+        let oppType = (_Players.currentPlayer.type == 'X') ? 'O' : 'X';
+       console.log('isFinishing: ' + _FinishKeys);
+            //one second to enter commands
+            setTimeout(function() {
+                console.log(_FinishKeys);
+                let keys = _FinishKeys.join();
+                console.log(keys);
+                switch (keys)
+                {
+                    case 'f': 
+                        Display.Lights.off();
+                        setTimeout(function() {
+                            FinishingMoves.Fatality1(oppType);                                                     
+                        },1500);
+                        setTimeout(function() {
+                            Display.Lights.on();
+                        },5000);
+                        break;
+                    default:
+                }
+                window.removeEventListener("keydown", captureKeys, false);
+            }, 1000);
+        
+    }
+
     const checkWinner = () => {
         let win = false;
-        let player = _Players.currentPlayer;
-        let type = player.type;
+        //let player = _Players.currentPlayer;
+        let type = _Players.currentPlayer.type;
         let gb = Gameboard.getGameboard();
-        let moves = 0;
+        let moves = 0;        
         
-        //diag winner
-        if (gb[type].rowB.indexOf('b1') != -1)
-        {
-            if (gb[type].rowA.indexOf('a0') != -1 && gb[type].rowC.indexOf('c2') != -1) 
-            {
-                win = true;
-                highlight(['a0','b1','c2']);
-            }
-            else if (gb[type].rowA.indexOf('a2') != -1 && gb[type].rowC.indexOf('c0') != -1) 
-            {
-                win = true;
-                highlight(['a2','b1','c0']);
-            }
-        }
-        
-        //hor & vert winner
+        //winner
         Object.keys(gb[type]).map(key => {
             if (key != 'name')
             {
                 let ct = gb[type][key].length;
-                moves += ct;
+                let oppType = (type == 'X') ? 'O' : 'X';
+                moves += (key.indexOf('col') != -1) ? ct : 0;
+
                 if (ct == 3)
                 {
                     win = true;
-                    highlight(gb[type][key]);
+                    highlight(gb[type][key]);                   
                 }
+
+                /*if (ct == 0 && gb[oppType][key].length == 2)
+                {
+                    _Finish = true;
+                }*/
             }
         });
         
         if (win) 
         {
-            Display.MessageDisplay.updateMsg(player.name + ' wins!');
+            _FinishKeys = [];
+            window.addEventListener("keydown", captureKeys, false);
+            console.log('winner: ' + _FinishKeys);
+            isFinishingMove();
+            Display.MessageDisplay.updateMsg(_Players.currentPlayer.name + ' wins!');
+            Soundeffect.playSound('finish',250);
             _GameOver = true;
         }
         else if (moves > 9)
@@ -253,27 +450,34 @@ const Game = (() => {
         if (_GameOver)
         {
             document.querySelector('#gameboard').classList = 'gameOver';
+            _FinishKeys = [];
+            
         }
     }
+    const captureKeys = (e) => {
+        _FinishKeys.push(e.key);
+    }   
     const highlight = (ids) => {
-        let timing = 400;
+        let timing = 100;
         ids.filter(id => {
             setTimeout(function(){
                 document.getElementById(id).classList.add('highlight');  
             }, timing);
-            timing += 400;
+            timing += 100;
         });
     }
     const resetGame = () => {
+        _FinishKeys = [];
         Gameboard.resetBoard();
         Display.MessageDisplay.updateMsg();
+        document.getElementById('mktheme').pause();
+        document.getElementById('mktheme').currentTime = 0;
     }
     Display.render();
     return {
-        startGame, setCurrentPlayer, getCurrentPlayer, checkWinner,  play, resetGame
+        startGame, setCurrentPlayer, getCurrentPlayer, checkWinner,  play, resetGame, isFinishingMove
     }
 })();
-
 
 function createElemWithAttributes(el, attrs) {
     let elem = document.createElement(el);
