@@ -234,7 +234,7 @@ const Display = ((selector) => {
 // PLAY SOUNDS
 ////////////*/
 const Soundeffect = (() => {
-    let moves = ['se1','se2','se3','toasty','getOver'];
+    let moves = ['se1','se2','se3','getOver'];
     const playSound = (type, delay = 0) => {
         setTimeout(function(){
             switch (type)
@@ -243,6 +243,10 @@ const Soundeffect = (() => {
                     let idx = Math.floor(Math.random()*moves.length);
                     console.log(idx);
                     document.getElementById(moves[idx]).play();
+                    if (Math.random()*10 < 2)
+                    {
+                        document.getElementById('toasty').play();
+                    }
                     break;
                 case 'round1':
                     /*document.getElementById('rd1').addEventListener('ended', () => {
@@ -409,27 +413,25 @@ const Game = (() => {
         //let player = _Players.currentPlayer;
         let type = _Players.currentPlayer.type;
         let gb = Gameboard.getGameboard();
-        let moves = 0;        
+        let movesCt = 0;
         
-        //winner
-        Object.keys(gb[type]).map(key => {
-            if (key != 'name')
-            {
-                let ct = gb[type][key].length;
-                let oppType = (type == 'X') ? 'O' : 'X';
-                moves += (key.indexOf('col') != -1) ? ct : 0;
-
-                if (ct == 3)
+        //winner / tie counter
+        Object.keys(gb).filter((key) => {
+           //key: X, O
+            Object.keys(gb[key]).map(gridKey => {  
+                //gridKey: movesObj              
+                if (gridKey != 'name')
                 {
-                    win = true;
-                    highlight(gb[type][key]);                   
-                }
-
-                /*if (ct == 0 && gb[oppType][key].length == 2)
-                {
-                    _Finish = true;
-                }*/
-            }
+                    let ct = gb[key][gridKey].length;                           
+                    movesCt += (gridKey.indexOf('col') != -1) ? ct : 0;
+                    console.log('moves ct: ' + movesCt);
+                    if (ct == 3)
+                    {
+                        win = true;
+                        highlight(gb[key][gridKey]);                   
+                    }
+                }                            
+            });
         });
         
         if (win) 
@@ -442,7 +444,7 @@ const Game = (() => {
             Soundeffect.playSound('finish',250);
             _GameOver = true;
         }
-        else if (moves > 9)
+        else if (movesCt >= 9)
         {
             Display.MessageDisplay.updateMsg('Tie game!');
             _GameOver = true;
