@@ -1,10 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Trade+Winds&display=swap');
 :root {
     --border-style:3px solid black;
+}
+body {
+    position:relative;
+    font-family: 'Press Start 2P', sans-serif;
+}
+h1 {
+    font-size:1.5em;
+}
+h1 span {
+    position: absolute;
+    top:-100px;
+    right:30px;
+    font-size:.5em;
+    background: black;
+    color:white;
+    padding:5px;
+}
+h1 span.show {
+    animation: TE 2s ease-in-out forwards;
+}
+@keyframes TE {
+    0% { top: -100px;}
+    10% { top: 20px; }
+    15% { top: 0px;}
+    20% { top: 20px;}
+    25% { top: 10px;}
+    30% { top: 20px;}
+    100% {top: 20px;}
+}
+#sounds {
+    width:25px;
+    position: absolute;
+    right:-5px;
+    top:20px;
+}
+#sounds img {
+    width:25px;
 }
 #app {
     width:100%;
     margin:auto;
     min-width:300px;
+    position: relative;
+    overflow-y:hidden;
+}
+div#status {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity:0;
+    top:-100vh;
+    transition: top .5s ease-out, opacity 1s ease-out;
+}
+#status span {
+        background: white;
+        padding: 10px;
+        font-size: 2em;
+}
+#status.show {
+    top:0;
+    opacity:1;
 }
 div#display {
     border: 5px dotted green;
@@ -152,16 +213,37 @@ span.fatal {
     opacity: 0;
     position: absolute;
     top:0;
-    z-index:-1;
-    transition: opacity 1s ease-out;
+    /*transition: opacity 1s ease-out;*/
+    animation: on 2s ease-out forwards;
 }
 #lights.off {
-    opacity:.75;
-    z-index:9999;
+    animation: off 2s ease-out forwards;
 }
-@keyframes lightsdown {
-    0% {opacity:0;}
-    100% {opacity: .75;}
+@keyframes off {
+    0% {opacity:0; z-index:9999;}  
+    100% {opacity:.75;}
+}
+@keyframes on {
+    0% {opacity:.75;}
+    99% {z-index:9999;}  
+    100% {opacity:0; z-index:-1;}
+}
+div#toastied {
+    position: absolute;
+    right: -70px;
+    bottom: -250px;
+    /*transition: bottom .25s ease-out;*/
+    
+}
+#toastied.pop {
+    /*bottom:-40px;*/
+    animation: toastyPop 2s ease-in; 
+}
+@keyframes toastyPop {
+    0% {bottom:-250px;}  
+    30% {bottom:-40px;}
+    50% {bottom:-40px;}
+    100% {bottom:-250px;}
 }
 @media (min-width: 550px) {
     #players {

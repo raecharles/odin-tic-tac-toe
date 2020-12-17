@@ -1,5 +1,6 @@
 
 const APP = document.querySelector('#app');
+let isMuted = true;
 
 const Gameboard = (() => {
     
@@ -79,7 +80,63 @@ const Player = (name,type) => {
     return { name, type }
 }
 
+/*///////////////
+// DISPLAY COMPONENTS
+///////////////*/
 const Display = ((selector) => {
+    /*/////////////////
+    // SOUND OPT
+    ///////////////*/
+    const SoundOptions = (() => {
+        const soundUI = createElemWithAttributes('div',{id: 'sounds'});
+        const speaker = createElemWithAttributes('img',{src: 'img/muted.png', alt: 'Speaker by Dileep M from the Noun Project'});        
+        let sounds = document.querySelectorAll('audio');
+
+        const mute = () => {
+            console.log('mute');
+            isMuted = true;
+            document.querySelector('#sounds img').setAttribute('src','img/muted.png');
+            [...sounds].filter((audio) => {
+                console.log(audio);
+                audio.muted = true;
+            });
+        };
+
+        const unmute = () => {
+            console.log('unmute');
+            isMuted = false;
+            document.querySelector('#sounds img').setAttribute('src','img/speaker.png');
+            [...sounds].filter((audio) => {
+               // audio.removeAttribute('muted');
+               audio.muted = false;
+            });
+        }
+
+        const render = () => {
+            APP.append(soundUI);
+            document.querySelector('#sounds').append(speaker);
+            mute();
+            document.querySelector('#sounds img').addEventListener('click', () => {
+                console.log('sound clicked');
+                //let icon = document.querySelector('#sounds img');
+                //turn sound on / off
+                if (isMuted) 
+                {                    
+                    let theme = document.querySelector('#mktheme');
+                    if (theme.paused) theme.play();
+                    unmute();
+                }
+                else
+                {                    
+                    mute();
+                }                   
+            });
+        }
+        return {
+            render, mute
+        }
+    })();
+
 
     /*///////////////////
     // MESSAGE DISPLAY
@@ -101,11 +158,42 @@ const Display = ((selector) => {
     })();
 
     /*///////////////////
+    // STATUS DISPLAY
+    ///////////////////*/
+    const StatusDisplay = (() => {
+        const startMsg = 'Round 1: Fight!';
+        const disp = createElemWithAttributes('div', {'id': 'status'});
+        const text = createElemWithAttributes('span');
+        const updateMsg = (msg = startMsg) => {
+            document.querySelector('#status span').innerHTML = msg;            
+        }
+        const showMsg = () => {
+            document.querySelector('#status').classList = 'show';
+            
+        };
+
+        const render = () => {
+            console.log('building status display...');
+            APP.append(disp);
+            document.querySelector('#status').append(text);
+            document.querySelector('#status').addEventListener('transitionend',() => {
+                setTimeout(() => {
+                    document.querySelector('#status').classList = '';
+                },1000);
+            });
+            updateMsg();
+        }
+        return {
+            render, updateMsg, showMsg
+        }
+    })();
+
+    /*///////////////////
     // PLAYER INPUTS
     ///////////////////*/
     const PlayerInput = (() => {
         const validatePlayers = () => {
-            let players = ['CPU', 'CPU'];
+            let players = ['Player 1', 'Player 2'];
             
             for (let i = 0; i < 2; i++)
             {
@@ -117,7 +205,7 @@ const Display = ((selector) => {
                 }
                 else
                 {
-                    el.value = 'CPU';
+                    el.value = 'Player ' + i+1;
                 }
             }
             return players; 
@@ -135,7 +223,7 @@ const Display = ((selector) => {
                 lbl.innerHTML = players[i] + ': ';
                 document.querySelector('#players').append(lbl);
                 let input = createElemWithAttributes('input', {'id': id});
-                input.value = 'CPU';       
+                input.value = 'Player ' + (i+1);       
                 document.querySelector('#label-' + id).append(input);
             }   
 
@@ -175,19 +263,12 @@ const Display = ((selector) => {
             render
         }
     })();
+    //FATALITIES
     const Fatality = (type,marker) => {
         let boxAnim = createElemWithAttributes('div', {'class': 'finisher'});
         switch (type)
         {
             case 1:
-                /*boxAnim.innerHTML = `<svg width="100%" height="10">
-                <defs>
-                    <pattern id="spikes" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-                        <polygon points="0,0 10,0 5,10" style="fill:black;"></polygon>
-                    </pattern>
-                </defs>
-                <rect x="0" y="0" width="100%" height="10" fill="url(#spikes)"></rect>
-            </svg>`;*/
             console.log(marker);
             boxAnim.innerHTML = `<div class="squasher">
             <div class="markType col">${marker.repeat(50)};</div>    
@@ -202,7 +283,7 @@ const Display = ((selector) => {
         }
         return boxAnim;
     };
-
+    //LIGHTS
     const Lights = (() => {
         let lights = document.querySelector('#lights');
         const on = () => {
@@ -215,17 +296,42 @@ const Display = ((selector) => {
             on, off
         }
     })();
+    //TOASTY
+    const Toasty = (() => {
+        let toasty = createElemWithAttributes('div',{id: 'toastied'});        
+        let boon = createElemWithAttributes('img', {id: 'ed-boon', src: 'img/toasty.png'});
+        
+        const popup = () => {
+            document.querySelector('#toastied').classList = 'pop';            
+        }
+
+        const render = () => {
+            document.querySelector('#app').append(toasty);
+            let tst = document.querySelector('#toastied');
+            tst.append(boon);
+            tst.addEventListener('animationend',() => {
+                tst.classList = '';
+            });
+        }
+        return {
+            render,popup
+        }
+    })();
 
     const render = () => {
+        SoundOptions.render();
+        StatusDisplay.render();
         MessageDisplay.render();
         PlayerInput.render(['Player 1','Player 2']);
         //PlayerInput.render('Player 2');
         Button.render();
         Gameboard.render();
+        Toasty.render();
+        document.querySelector('h1 span').classList = 'show';
     }
 
     return {
-        render, MessageDisplay, PlayerInput, Fatality, Lights
+        render, MessageDisplay, PlayerInput, Fatality, Lights, Toasty, StatusDisplay
     }
     
 })('#app');
@@ -241,19 +347,18 @@ const Soundeffect = (() => {
             {
                 case 'move':
                     let idx = Math.floor(Math.random()*moves.length);
-                    console.log(idx);
-                    document.getElementById(moves[idx]).play();
+                    console.log(idx);                    
                     if (Math.random()*10 < 2)
                     {
-                        document.getElementById('toasty').play();
+                        let sound = document.getElementById(moves[idx]);
+                        console.log('toasty!');
+                        sound.addEventListener('ended', toasty);
+                        setTimeout(function(){sound.removeEventListener('ended',toasty)},2000);
                     }
+                    document.getElementById(moves[idx]).play();
                     break;
                 case 'round1':
-                    /*document.getElementById('rd1').addEventListener('ended', () => {
-                        document.getElementById('mktheme').play();
-                        document.getElementById('mktheme').setAttribute('loop','loop');
-                    });*/
-                    document.getElementById('rd1').play(); //callback - wait for audio to finish
+                    document.getElementById('rd1').play(); 
                     break;
                 case 'finish':
                     /*document.getElementById('finish').addEventListener('ended', () => {
@@ -271,6 +376,10 @@ const Soundeffect = (() => {
                     default:
             }
         }, delay);
+    }
+    const toasty = () => {
+        document.getElementById('toasty').play();
+        Display.Toasty.popup();
     }
     const resetSound = (id) => {
         let audio = document.getElementById(id);
@@ -318,15 +427,7 @@ const FinishingMoves = (() => {
             Soundeffect.playSound('fatality',1500);
                 
     }
-        /*let keys = _FinishKeys.join();
-        console.log(keys);
-        switch (keys)
-        {
-            case 'f': 
-                                                                                 
-                break;
-            default:
-        }*/
+
     return {
         Fatality1
     }
@@ -339,8 +440,8 @@ const Game = (() => {
     let _Players = {};
     let _GameOver = false;
     //let _Finish = false;  
-    var _FinishKeys = [];
-
+    var _FinishKeys = [];    
+    
     const setCurrentPlayer = () => {
         _Players.currentPlayer = (_Players.currentPlayer == _Players.p1) ? _Players.p2 : _Players.p1;
         Display.MessageDisplay.updateMsg(_Players.currentPlayer.name + "'s move."); 
@@ -355,10 +456,10 @@ const Game = (() => {
         _Players.p2 = Player(names[1],'O');
         _Players.currentPlayer = _Players.p1;
         Display.MessageDisplay.updateMsg(names[0] + "'s move.");
+        Display.StatusDisplay.showMsg();
         document.querySelector('#rd1').addEventListener('ended', () => {
             document.querySelector('#gameboard').classList = '';
-            document.getElementById('mktheme').play();
-            document.getElementById('mktheme').setAttribute('loop','loop');
+            
         })        
         Soundeffect.playSound('round1');
         _GameOver = false;
@@ -371,12 +472,6 @@ const Game = (() => {
             Soundeffect.playSound('move');
             checkWinner();
             if (!_GameOver) setCurrentPlayer();
-            /*if (_Finish) {
-                setTimeout(function() {
-                    Soundeffect.playSound('finish')
-                },1000);                
-                _Finish = false;
-            }*/
         }
     }
 
@@ -472,10 +567,11 @@ const Game = (() => {
         _FinishKeys = [];
         Gameboard.resetBoard();
         Display.MessageDisplay.updateMsg();
-        document.getElementById('mktheme').pause();
-        document.getElementById('mktheme').currentTime = 0;
+        //document.getElementById('mktheme').pause();
+        //document.getElementById('mktheme').currentTime = 0;
     }
     Display.render();
+    //Soundeffect.playSound('theme');
     return {
         startGame, setCurrentPlayer, getCurrentPlayer, checkWinner,  play, resetGame, isFinishingMove
     }
@@ -490,3 +586,9 @@ function createElemWithAttributes(el, attrs) {
   }
  
 
+//fix the lights after fatality
+//typography
+//auto round 2 on tie
+//round 3?
+//babality?
+//ai?
