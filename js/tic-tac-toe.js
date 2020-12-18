@@ -360,6 +360,9 @@ const Soundeffect = (() => {
                 case 'round1':
                     document.getElementById('rd1').play(); 
                     break;
+                case 'round2':
+                    document.getElementById('rd2').play(); 
+                    break;   
                 case 'finish':
                     /*document.getElementById('finish').addEventListener('ended', () => {
                         Game.isFinishingMove();
@@ -370,7 +373,7 @@ const Soundeffect = (() => {
                     document.getElementById('mktheme').play();
                     break;
                 case 'fatality':
-                    resetSound('mktheme');
+                   // resetSound('mktheme');
                     document.getElementById('fatality').play(); 
                     break;
                     default:
@@ -424,7 +427,7 @@ const FinishingMoves = (() => {
                 }
                 
             }); 
-            Soundeffect.playSound('fatality',1500);
+            Soundeffect.playSound('fatality',1750);
                 
     }
 
@@ -439,8 +442,9 @@ const FinishingMoves = (() => {
 const Game = (() => {
     let _Players = {};
     let _GameOver = false;
-    //let _Finish = false;  
+    let _Winners = []; 
     var _FinishKeys = [];    
+    let _BleedId;
     
     const setCurrentPlayer = () => {
         _Players.currentPlayer = (_Players.currentPlayer == _Players.p1) ? _Players.p2 : _Players.p1;
@@ -449,20 +453,32 @@ const Game = (() => {
     const getCurrentPlayer = () => {
         return _Players.currentPlayer;
     }
+    const setWinner = (result) =>{
+        _Winners.push(result);
+    }
+    const getWinners = () => {
+        return _Winners;
+    }
     const startGame = () => {
+        
+        if (_Winners.length == 2) _Winners = [];
         _FinishKeys = [];
         let names = Display.PlayerInput.validatePlayers();
         _Players.p1 = Player(names[0],'X');
         _Players.p2 = Player(names[1],'O');
         _Players.currentPlayer = _Players.p1;
         Display.MessageDisplay.updateMsg(names[0] + "'s move.");
-        Display.StatusDisplay.showMsg();
-        document.querySelector('#rd1').addEventListener('ended', () => {
-            document.querySelector('#gameboard').classList = '';
-            
+        
+        let rd = (_Winners.length == 0) ? '1' : '2';
+        document.querySelector('#rd' + rd).addEventListener('play', () => {
+            document.querySelector('#gameboard').classList = ''; 
         })        
-        Soundeffect.playSound('round1');
+        Soundeffect.playSound('round' + rd);
+        Display.StatusDisplay.updateMsg('Round ' + rd + ': Fight!');
+        Display.StatusDisplay.showMsg();
         _GameOver = false;
+
+        console.log('winners: ' + _Winners);
     }
     const play = (id) => {
         let type = _Players.currentPlayer.type;
@@ -477,11 +493,12 @@ const Game = (() => {
 
     const isFinishingMove = () => {
         let gb = Gameboard.getGameboard();
+        let finish = false;
         //move to top
-        let oppType = (_Players.currentPlayer.type == 'X') ? 'O' : 'X';
+        let oppType = _Players.currentPlayer.type;//(_Players.currentPlayer.type == 'X') ? 'O' : 'X';
        console.log('isFinishing: ' + _FinishKeys);
             //one second to enter commands
-            setTimeout(function() {
+            
                 console.log(_FinishKeys);
                 let keys = _FinishKeys.join();
                 console.log(keys);
@@ -495,14 +512,16 @@ const Game = (() => {
                         setTimeout(function() {
                             Display.Lights.on();
                         },5000);
+                        finish = true;
                         break;
                     default:
                 }
                 window.removeEventListener("keydown", captureKeys, false);
-            }, 1000);
+                return finish;
+            //}, 1000);
         
     }
-
+    
     const checkWinner = () => {
         let win = false;
         //let player = _Players.currentPlayer;
@@ -532,15 +551,33 @@ const Game = (() => {
         if (win) 
         {
             _FinishKeys = [];
+            let winner = (_Players.currentPlayer === _Players.p1) ? 'p1' : 'p2';
+            _Winners.push(winner);
             window.addEventListener("keydown", captureKeys, false);
-            console.log('winner: ' + _FinishKeys);
-            isFinishingMove();
             Display.MessageDisplay.updateMsg(_Players.currentPlayer.name + ' wins!');
             Soundeffect.playSound('finish',250);
-            _GameOver = true;
+            setTimeout(function() {
+                console.log('what round? ' + _Winners.length);
+                if (isFinishingMove() && _Winners.length < 3)
+                {
+
+                           document.getElementById('fatality').addEventListener('ended', () => {
+                            _FinishKeys = [];
+                            Gameboard.resetBoard();
+                            startGame();
+                           }); 
+                        }
+                else
+                {
+                    _GameOver = true;
+                }
+                
+            }, 1000);
+            
         }
         else if (movesCt >= 9)
         {
+            _Winners.push('tie');
             Display.MessageDisplay.updateMsg('Tie game!');
             _GameOver = true;
         }
@@ -551,6 +588,7 @@ const Game = (() => {
             
         }
     }
+
     const captureKeys = (e) => {
         _FinishKeys.push(e.key);
     }   

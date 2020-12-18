@@ -44,7 +44,7 @@ h1 span.show {
     margin:auto;
     min-width:300px;
     position: relative;
-    overflow-y:hidden;
+    overflow:hidden;
 }
 div#status {
     position: absolute;
@@ -134,6 +134,7 @@ span.fatal {
     top: -60px; /*transition to 10px then transition flex basis to 200%*/
     flex-basis: 0%;
     transition: top .25s ease-in, flex-basis .1s ease-in;
+    font-family: sans-serif;
 }
 .finisher svg {
     position: absolute;
