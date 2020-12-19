@@ -57,6 +57,7 @@ div#status {
     opacity:0;
     top:-100vh;
     transition: top .5s ease-out, opacity 1s ease-out;
+    z-index: 9999;
 }
 #status span {
         background: white;
@@ -72,15 +73,29 @@ div#display {
     padding: 10px;
 }
 #players {
-    margin:20px 0;
+    margin:25px 0;
 }
 #players label {
     display:flex;
     margin-right:10px;
+    position:relative;
 }
 #players input {
     flex:1;
     margin-left:5px;
+}
+span.win {
+    position: absolute;
+    left: -2px;
+    top: 9px;
+    color: red;
+}
+span.win:nth-child(3) {
+    left:11px;
+}
+.win:before {
+    content: ' \25CF';
+    font-size: 1.5em;
 }
 #start {
     width: 100%;
@@ -157,7 +172,7 @@ span.fatal {
     width: 20px;
     word-break: break-all;
     margin: auto;
-    font-size: 2em;
+    font-size: 1.8em;
     overflow: hidden;
 }
 .bloodLt, .bloodRt {
@@ -168,7 +183,7 @@ span.fatal {
     right: 0;
     text-align: center;
     opacity:0;
-    bottom:-9px;
+    bottom:-8px;
     font-size:.75em;
 }
 .bloodLt {
@@ -180,12 +195,12 @@ span.fatal {
 .bloodLt.bleed {
     opacity:1;
     color:red;
-    left:-100px;
+    left:-130px;
 }
 .bloodRt.bleed {
     opacity:1;
     color:red;
-    right:-100px;
+    right:-105px;
 }
 #gameboard .box:nth-child(5) {
     border: var(--border-style);
