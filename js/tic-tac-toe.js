@@ -102,8 +102,16 @@ const Game = (() => {
                     console.log('what round? ' + _Winners.length);
                     if (isFinishingMove())
                     {
-                        Soundeffect.Sounds.fatality.addEventListener('ended', () => {
-                            document.querySelector('.bleed').addEventListener('transitionend', () => {
+                        let finishSound = 'fatality';
+                        switch (_FinishKeys)
+                        {
+                            case 'b':
+                                finishSound = 'babality';
+                                break;
+                            default:
+                        }
+                        Soundeffect.Sounds[finishSound].addEventListener('ended', () => {
+                            document.querySelector('.bleed').addEventListener('animationend', () => {
                                 nextRound();
                             });                        
                         }); 
@@ -141,17 +149,12 @@ const Game = (() => {
         if (getOccurrence(_Winners,'p1') == 2 || getOccurrence(_Winners,'p2') == 2)
         {
             next = false;
-            /*DispModule.MessageDisplay.updateMsg('Game Over!');
-            DispModule.StatusDisplay.updateMsg('Game Over!'); //consolidate these to one updater
-            DispModule.StatusDisplay.showMsg();*/
             DispModule.Messages.updateMessages('Game Over!');
         }
         else if (_Winners.length == 3)
         {
             next = false;
             DispModule.Messages.updateMessages('Game Over... Pathetic!');
-            //DispModule.Messages.updateStat('Game Over!'); //consolidate these to one updater
-            //DispModule.StatusDisplay.showMsg();
             Soundeffect.playSound('pathetic');
         }
         if (next)
@@ -181,7 +184,8 @@ const Game = (() => {
         let oppType = _Players.currentPlayer.type;//(_Players.currentPlayer.type == 'X') ? 'O' : 'X';
         let ids = [].concat(_GB[oppType].col0,_GB[oppType].col1,_GB[oppType].col2);
         let keys = _FinishKeys.join();
-
+        _FinishKeys = keys;
+        console.log(keys);
         switch (keys)
         {
             case 'f': 
@@ -190,6 +194,18 @@ const Game = (() => {
                     FinishingMoves.Fatality1(ids);  
                     Soundeffect.playSound('dun');
                     Soundeffect.playSound('fatality',2000);                                                   
+                },1500);
+                setTimeout(function() {
+                    DispModule.Lights.on();
+                },5000);   
+                finish = true;          
+                break;
+            case 'b': 
+                DispModule.Lights.off();
+                setTimeout(function() {
+                    FinishingMoves.Babality(ids);  
+                    Soundeffect.playSound('preBaby');
+                    Soundeffect.playSound('babality',2000);                                                   
                 },1500);
                 setTimeout(function() {
                     DispModule.Lights.on();
@@ -292,10 +308,3 @@ const Game = (() => {
         startGame, setCurrentPlayer, getCurrentPlayer, checkWinner,  play, resetGame, isFinishingMove
     }
 })();
-
-
- 
-
-//typography
-//babality?
-//ai?

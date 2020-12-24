@@ -8,11 +8,14 @@ body {
 }
 h1 {
     font-size:1.5em;
+    padding-bottom:20px;
 }
 h1 span {
     position: absolute;
     top:-100px;
-    right:30px;
+    /*right:30px;*/    
+    left: 0;
+    right: 0;
     font-size:.5em;
     background: black;
     color:white;
@@ -23,18 +26,18 @@ h1 span.show {
 }
 @keyframes TE {
     0% { top: -100px;}
-    10% { top: 20px; }
-    15% { top: 0px;}
-    20% { top: 20px;}
-    25% { top: 10px;}
-    30% { top: 20px;}
-    100% {top: 20px;}
+    10% { top: 46px; }
+    15% { top: 26px;}
+    20% { top: 46px;}
+    25% { top: 36px;}
+    30% { top: 46px;}
+    100% {top: 46px;}
 }
 #sounds {
     width:25px;
     position: absolute;
     right:-5px;
-    top:20px;
+    top:17px;
 }
 #sounds img {
     width:25px;
@@ -58,44 +61,59 @@ div#status {
     top:-100vh;
     transition: top .5s ease-out, opacity 1s ease-out;
     z-index: 9999;
+    font-size:.5em;
 }
 #status span {
-        background: white;
+        background: black;
+        color:white;
         padding: 10px;
         font-size: 2em;
 }
 #status.show {
     top:0;
-    opacity:1;
+    opacity:.85;
 }
 div#display {
     border: 5px dotted green;
     padding: 10px;
+    line-height: 1.5em;
+    font-size:.5em;
 }
 #players {
-    margin:25px 0;
+    margin:30px 0 5px 0;
 }
 #players label {
     display:flex;
-    margin-right:10px;
+    margin-bottom:5px;
     position:relative;
+    font-size:.9em;    
 }
 #players input {
     flex:1;
     margin-left:5px;
+    font-family: 'Press Start 2P', sans-serif;
+    font: 12px 'Press Start 2P', sans-serif;
+    width: 70%;
+    padding: 5px;
+    position: relative;
+    top: -5px;
 }
 span.win {
     position: absolute;
     left: -2px;
-    top: 9px;
-    color: red;
+    top: -20px;
+    /*color: red;*/
 }
 span.win:nth-child(3) {
-    left:11px;
+    left:13px;
 }
 .win:before {
-    content: ' \25CF';
-    font-size: 1.5em;
+    content: '';/*' \25CF';*/
+    width:12px;
+    height:10px;
+    background:red;
+    /*font-size: 1.5em;*/
+    display: inline-block;
 }
 #start {
     width: 100%;
@@ -106,6 +124,7 @@ span.win:nth-child(3) {
     border-radius: 5px;
     padding: 10px;
     margin-bottom:20px;
+    font-family: 'Press Start 2P', sans-serif;
 }
 #gameboard {
     margin-top:20px;
@@ -129,19 +148,53 @@ span.win:nth-child(3) {
     overflow:hidden;
 }
 .marker {
-    flex-basis: 30%;
+    flex-basis: 35%;
     overflow: hidden;
     width:100%;
     text-align: center;
+    font-size:.7em;
+    position: relative;
+    /*transition: border 5s ease-out;*/    
+}
+@keyframes markerFatal {
+    0% { border-bottom: 2px solid white;}
+    50% { border-bottom: 2px solid white;}
+    100% { border-bottom: 2px solid red;}
+}
+@keyframes markerBabal {
+    0% { border-bottom: 2px solid white;}
+    50% { border-bottom: 2px solid white;}
+    100% { border-bottom: 2px solid #0070ff;}
+}
+.finisher.fatal.stage2 + .marker {
+    animation: markerFatal 10s ease-out forwards;
+}
+.finisher.babal + .marker {
+    animation: markerBabal 10s ease-out forwards;
 }
 span.fatal {
     transform: scale(2,.2);
     display: block;
-    position: relative;
-    top: -14px;
+    position: absolute;
+    bottom: -13px;
     background: -webkit-linear-gradient(red,black);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    left:0;
+    right:-9px;
+    /*font-size:.9em;*/
+}
+.marker span.babal {
+    animation: baby 2s ease-out forwards;
+    text-transform: lowercase;
+    bottom: -3px;
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+@keyframes baby {
+    0% { font-size:1em; }
+    100% { font-size:.5em; }
 }
 .finisher {
     width: 100%;
@@ -155,15 +208,20 @@ span.fatal {
     position: absolute;
     bottom: 0;
 }
-.finisher.fatal {
+.finisher.fatal, .finisher.babal {
     top:10px;
 }
 .finisher.fatal.stage2 {
-    flex-basis:270%;
+    /*flex-basis:270%;*/
+    flex-basis:350%;
+}
+.finisher.babal.stage2 {
+    flex-basis:70%;
 }
 .squasher {
     position: absolute;
-    bottom: 0;
+    /*bottom: 0;*/
+    bottom:8px;
     font-size: 15px;
     line-height: 12px;
     width:100%;
@@ -178,30 +236,49 @@ span.fatal {
 .bloodLt, .bloodRt {
     position: absolute;
     width: 50px;
-    margin: auto;
-    left: 0;
-    right: 0;
     text-align: center;
     opacity:0;
-    bottom:-8px;
-    font-size:.75em;
-}
-.bloodLt {
-    transition:left 5s ease-out, opacity 7s ease-out, color 7s ease-out;
-}
-.bloodRt {
-    transition:right 5s ease-out, opacity 7s ease-out, color 7s ease-out;
-}
-.bloodLt.bleed {
-    opacity:1;
+    bottom:0;
+    font-size:6px;
     color:red;
-    left:-130px;
 }
-.bloodRt.bleed {
-    opacity:1;
-    color:red;
-    right:-105px;
+.fatal + .marker .bloodLt {
+    animation: bleedLt 5s ease-in forwards;
 }
+.fatal + .marker .bloodRt {
+    animation: bleedRt 5s ease-in forwards;
+}
+.babal + .marker .bloodLt {
+    animation: tearsLt 5s ease-in forwards;
+}
+.babal + .marker .bloodRt {
+    animation: tearsRt 5s ease-in forwards;
+}
+@keyframes bleedLt {
+    0% { left: calc(50% - 25px);opacity:0;}
+    67% { opacity:1;}
+    100% {left:-50px;opacity:1;}
+}
+@keyframes bleedRt {
+    0% { right: calc(50% - 25px);opacity:0;}
+    67% { opacity:1;}
+    100% {right: -50px; opacity:1;}
+}
+@keyframes tearsLt {
+    0% { left: calc(50% - 25px);opacity:0;}
+    67% { opacity:1;}
+    100% {left:calc(50% - 53px);opacity:1;}
+}
+@keyframes tearsRt {
+    0% { right: calc(50% - 25px);opacity:0;}
+    67% { opacity:1;}
+    100% {right: calc(50% - 50px); opacity:1;}
+}
+
+div.babal + .marker span.bloodLt.bleed, div.babal + .marker span.bloodRt.bleed {
+    color: #0070ff;
+}
+
 #gameboard .box:nth-child(5) {
     border: var(--border-style);
 }
@@ -233,50 +310,154 @@ span.fatal {
     animation: on 2s ease-out forwards;
 }
 #lights.off {
-    animation: off 2s ease-out forwards;
+    animation: off 1s ease-out forwards;
 }
 @keyframes off {
     0% {opacity:0; z-index:9999;}  
-    100% {opacity:.75;}
+    100% {opacity:.6;}
 }
 @keyframes on {
-    0% {opacity:.75;}
+    0% {opacity:.6;}
     99% {z-index:9999;}  
     100% {opacity:0; z-index:-1;}
 }
 div#toastied {
     position: absolute;
-    right: -70px;
+    right:-30px;
     bottom: -250px;
     /*transition: bottom .25s ease-out;*/
     
 }
+#toastied img {
+    max-width:100px;
+}
 #toastied.pop {
-    /*bottom:-40px;*/
     animation: toastyPop 2s ease-in; 
 }
 @keyframes toastyPop {
     0% {bottom:-250px;}  
-    30% {bottom:-40px;}
-    50% {bottom:-40px;}
+    30% {bottom:-25px;}
+    50% {bottom:-25px;}
     100% {bottom:-250px;}
 }
+@media (max-width: 300px) {
+    .box {
+        height: 85px;
+    }
+}
+@media (min-width: 400px) {
+    .finisher.fatal.stage2 {
+        flex-basis:450%;
+    }
+}
 @media (min-width: 550px) {
+    h1 {
+        padding-bottom:0;
+    }
+    h1 span {
+        left:auto;
+        right:30px;
+    }
+    div#display, div#status {
+        font-size:.75em;
+    }
     #players {
         display: flex;
     }
     #players label {
         flex: 0 0 49%;
     }
+    input#player1 {
+        margin-right:10px;
+    }
+    @keyframes TE {
+        0% { top: -100px;}
+        10% { top: 17px; }
+        15% { top: 0px;}
+        20% { top: 17px;}
+        25% { top: 10px;}
+        30% { top: 17px;}
+        100% {top: 17px;}
+    }
+    div#toastied {
+        right: -70px;
+    }
+    #toastied img {
+        max-width:initial;
+    }
+    @keyframes toastyPop {
+        0% {bottom:-250px;}  
+        30% {bottom:-40px;}
+        50% {bottom:-40px;}
+        100% {bottom:-250px;}
+    }
+    .marker {
+        flex-basis: 30%;
+        font-size:1em;
+    }
+    span.fatal {
+        bottom:-20px;
+    }
+
+    .finisher.fatal.stage2 {
+        flex-basis:270%;
+    }
+
+    .squasher {
+        bottom: 0;
+    }
+    .bloodLt, .bloodRt {
+        font-size:7px;
+    }
+
+    .babal span.bloodLt.bleed, .babal span.bloodRt.bleed  {
+        top: 43px;
+    }
+    @keyframes tearsLt {
+        0% { left: calc(50% - 25px);opacity:0;}
+        67% { opacity:1;}
+        100% {left:calc(50% - 63px);opacity:1;}
+    }
+    @keyframes tearsRt {
+        0% { right: calc(50% - 25px);opacity:0;}
+        67% { opacity:1;}
+        100% {right: calc(50% - 60px); opacity:1;}
+    }
+    .box {
+        height:calc(500px / 3);
+    }
 }
 @media (min-width: 768px) {
     #app {
         width:700px;
     }
+    div#display, div#status {
+        font-size:1em;
+    }
     #start {
         margin-bottom:40px;
     }
-    .box {
-        height:calc(500px / 3);
+    
+    .squasher {
+        bottom: 3px;
     }
+    .bloodLt, .bloodRt {
+        bottom:0;
+        font-size:9px;
+    }
+    @keyframes bleedLt {
+        0% { left: calc(50% - 25px);opacity:0;}
+        67% { opacity:1;}
+        100% {left:3px;opacity:1;}
+    }
+    @keyframes bleedRt {
+        0% { right: calc(50% - 25px);opacity:0;}
+        67% { opacity:1;}
+        100% {right: 3px; opacity:1;}
+    }
+
+    .babal span.bloodLt.bleed, .babal span.bloodRt.bleed  {
+        top: 47px;
+    }
+
 }

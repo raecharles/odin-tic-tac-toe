@@ -13,6 +13,7 @@ const Soundeffect = (() => {
         rd3: new Audio('media/round3.m4a'),
         dun: new Audio('media/dun-dun-dun.mp3'),
         pathetic: new Audio('media/pathetic.mp3'),
+        preBaby: new Audio('media/pre-babality.mp3'),
         babality: new Audio('media/babality.mp3'),
         finish: new Audio('media/finish-him.mp3'),
         mktheme: new Audio('media/mk-theme.mp3'),
@@ -62,6 +63,12 @@ const Soundeffect = (() => {
                     break;
                 case 'pathetic':
                     Sounds.pathetic.play();
+                    break;
+                case 'preBaby':
+                    Sounds.preBaby.play();
+                    break;
+                case 'babality':                   
+                    Sounds.babality.play();
                     break;
                 case 'fatality':
                    // resetSound('mktheme');
